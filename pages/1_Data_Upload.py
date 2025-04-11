@@ -14,83 +14,75 @@ st.markdown("Upload your data or use a sample dataset to get started.")
 # Sample data option
 use_sample = st.checkbox("Use sample dataset")
 
-if use_sample:
-    sample_option = st.selectbox(
-        "Select sample dataset:",
-        ["Customer Orders", "Movie Database"]
-    )
-    
-    if sample_option == "Customer Orders":
-        # Load sample customer orders data
-        try:
-            customer_orders_path = os.path.join("data", "sample_customer_orders.csv")
-            data = pd.read_csv(customer_orders_path)
-            st.success(f"Loaded sample customer orders dataset with {len(data)} rows")
+def load_orders_csv():
+    try:
+        customer_orders_path = os.path.join("data", "sample_customer_orders.csv")
+        data = pd.read_csv(customer_orders_path)
+        st.success(f"Loaded sample customer orders dataset with {len(data)} rows")
             
-            # Reset dependent state when data changes
-            if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
-                if hasattr(st.session_state, 'reset_state_on_data_change'):
-                    st.session_state.reset_state_on_data_change()
+        # Reset dependent state when data changes
+        if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
+            if hasattr(st.session_state, 'reset_state_on_data_change'):
+                st.session_state.reset_state_on_data_change()
             
-            st.session_state.data = data
-        except Exception as e:
-            st.error(f"Error loading sample data: {str(e)}")
+        st.session_state.data = data
+    except Exception as e:
+        st.error(f"Error loading sample data: {str(e)}")
             
-            # Fallback to generated data if file not found
-            st.warning("Using generated sample data instead")
+        # Fallback to generated data if file not found
+        st.warning("Using generated sample data instead")
             
-            # Create sample customer orders data
-            customers = pd.DataFrame({
+        # Create sample customer orders data
+        customers = pd.DataFrame({
                 "customer_id": range(1, 11),
                 "customer_name": [f"Customer {i}" for i in range(1, 11)],
                 "customer_email": [f"customer{i}@example.com" for i in range(1, 11)]
             })
             
-            products = pd.DataFrame({
+        products = pd.DataFrame({
                 "product_id": range(1, 6),
                 "product_name": [f"Product {i}" for i in range(1, 6)],
                 "price": np.random.uniform(10, 100, 5).round(2),
                 "product_category": np.random.choice(["Electronics", "Clothing", "Books"], 5)
             })
             
-            orders = pd.DataFrame({
+        orders = pd.DataFrame({
                 "order_id": range(1, 21),
                 "customer_id": np.random.choice(range(1, 11), 20),
                 "order_date": pd.date_range(start="2023-01-01", periods=20),
                 "total_amount": np.random.uniform(20, 200, 20).round(2)
             })
             
-            # Merge data
-            merged_data = orders.merge(customers, on="customer_id", how="left")
+        # Merge data
+        merged_data = orders.merge(customers, on="customer_id", how="left")
+            
+         # Reset dependent state when data changes
+        if 'data' in st.session_state and st.session_state.data is not None and not merged_data.equals(st.session_state.data):
+            if hasattr(st.session_state, 'reset_state_on_data_change'):
+                st.session_state.reset_state_on_data_change()
+                
+        st.session_state.data = merged_data
+
+def load_movies_csv():
+    try:
+        movies_path = os.path.join("data", "sample_movies.csv")
+        data = pd.read_csv(movies_path)
+        st.success(f"Loaded sample movie dataset with {len(data)} rows")
             
             # Reset dependent state when data changes
-            if 'data' in st.session_state and st.session_state.data is not None and not merged_data.equals(st.session_state.data):
-                if hasattr(st.session_state, 'reset_state_on_data_change'):
-                    st.session_state.reset_state_on_data_change()
+        if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
+            if hasattr(st.session_state, 'reset_state_on_data_change'):
+                st.session_state.reset_state_on_data_change()
                 
-            st.session_state.data = merged_data
-    
-    elif sample_option == "Movie Database":
-        # Load sample movie data
-        try:
-            movies_path = os.path.join("data", "sample_movies.csv")
-            data = pd.read_csv(movies_path)
-            st.success(f"Loaded sample movie database with {len(data)} rows")
-            
-            # Reset dependent state when data changes
-            if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
-                if hasattr(st.session_state, 'reset_state_on_data_change'):
-                    st.session_state.reset_state_on_data_change()
-                
-            st.session_state.data = data
-        except Exception as e:
-            st.error(f"Error loading sample data: {str(e)}")
+        st.session_state.data = data
+    except Exception as e:
+        st.error(f"Error loading sample data: {str(e)}")
             
             # Fallback to generated data if file not found
-            st.warning("Using generated sample data instead")
+        st.warning("Using generated sample data instead")
             
-            # Create sample movie data
-            data = pd.DataFrame({
+        # Create sample movie data
+        data = pd.DataFrame({
                 "movie_id": np.repeat(range(1, 6), 3),
                 "title": np.repeat(["Movie A", "Movie B", "Movie C", "Movie D", "Movie E"], 3),
                 "release_year": np.repeat([2020, 2019, 2021, 2018, 2022], 3),
@@ -101,11 +93,63 @@ if use_sample:
             })
             
             # Reset dependent state when data changes
-            if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
-                if hasattr(st.session_state, 'reset_state_on_data_change'):
-                    st.session_state.reset_state_on_data_change()
+        if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
+            if hasattr(st.session_state, 'reset_state_on_data_change'):
+                st.session_state.reset_state_on_data_change()
                 
-            st.session_state.data = data
+        st.session_state.data = data
+
+def load_incidents_csv():
+    try:
+        movies_path = os.path.join("data", "sample_event_log.csv")
+        data = pd.read_csv(movies_path)
+        st.success(f"Loaded sample incidents event log dataset with {len(data)} rows")
+            
+            # Reset dependent state when data changes
+        if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
+            if hasattr(st.session_state, 'reset_state_on_data_change'):
+                st.session_state.reset_state_on_data_change()
+                
+        st.session_state.data = data
+    except Exception as e:
+        st.error(f"Error loading sample data: {str(e)}")
+            
+            # Fallback to generated data if file not found
+        st.warning("Using generated sample data instead")
+            
+        # Create sample incident event log data
+        data = pd.DataFrame({
+            "incident_id": range(1, 21),
+            "timestamp": pd.date_range(start="2023-01-01", periods=20, freq="H"),
+            "event_type": np.random.choice(["Error", "Warning", "Info", "Critical"], 20),
+            "user_id": np.random.randint(1001, 1021, 20),
+            "description": [f"Event description {i}" for i in range(1, 21)],
+            "severity": np.random.choice(["Low", "Medium", "High", "Critical"], 20)
+            })
+            
+            # Reset dependent state when data changes
+        if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
+            if hasattr(st.session_state, 'reset_state_on_data_change'):
+                st.session_state.reset_state_on_data_change()
+                
+        st.session_state.data = data       
+
+if use_sample:
+    sample_option = st.selectbox(
+        "Select sample dataset:",
+        ["Customer Orders", "Movie Database", "Incident Reports"]
+    )
+    
+    if sample_option == "Customer Orders":
+        # Load sample customer orders data
+        load_orders_csv()
+    
+    elif sample_option == "Movie Database":
+        # Load sample movie data
+        load_movies_csv()
+    elif sample_option == "Incident Reports":
+        # Load sample movie data
+        load_incidents_csv()    
 else:
     # File upload
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
