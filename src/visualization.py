@@ -32,10 +32,15 @@ class GraphVisualizer:
         if labels and len(labels) > 0:
             label_conditions = " OR ".join([f"n:{label}" for label in labels])
             nodes_query = f"MATCH (n) WHERE {label_conditions} RETURN n, labels(n) as labels LIMIT {limit}"
+            
+            # For edges, we need to match nodes with the specified labels
+            label_filter_a = " OR ".join([f"a:{label}" for label in labels])
+            label_filter_b = " OR ".join([f"b:{label}" for label in labels])
             edges_query = f"""
             MATCH (a)-[r]->(b) 
-            WHERE ({label_conditions}) AND ({' OR '.join([f"b:{label}" for label in labels])})
-            RETURN a, type(r) as type, b, labels(a) as a_labels, labels(b) as b_labels LIMIT {limit * 2}
+            WHERE ({label_filter_a}) AND ({label_filter_b})
+            RETURN a, type(r) as type, b, labels(a) as a_labels, labels(b) as b_labels 
+            LIMIT {limit * 2}
             """
         else:
             nodes_query = f"MATCH (n) RETURN n, labels(n) as labels LIMIT {limit}"

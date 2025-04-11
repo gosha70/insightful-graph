@@ -89,8 +89,8 @@ class GraphBuilder:
     def _create_constraints(self, schema):
         """Create constraints for ID columns"""
         try:
-            # For Neo4j 4.x+
-            self.connector.run_query("CREATE CONSTRAINT IF NOT EXISTS ON (n:Entity) ASSERT n.id IS UNIQUE")
+            # For Neo4j 5.x+
+            self.connector.run_query("CREATE CONSTRAINT IF NOT EXISTS FOR (n:Entity) REQUIRE n.id IS UNIQUE")
             
             # Create constraints for each entity type
             id_columns = [col for col, info in schema["columns"].items() 
@@ -99,19 +99,20 @@ class GraphBuilder:
             for id_column in id_columns:
                 entity_type = id_column.replace("_id", "").title()
                 try:
+                    # Try Neo4j 5.x+ syntax first
                     self.connector.run_query(
-                        f"CREATE CONSTRAINT IF NOT EXISTS ON (n:{entity_type}) ASSERT n.id IS UNIQUE"
+                        f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{entity_type}) REQUIRE n.id IS UNIQUE"
                     )
                 except Exception as e:
-                    # Try alternative syntax for Neo4j 5.x+
+                    # Fallback to Neo4j 4.x syntax
                     try:
                         self.connector.run_query(
-                            f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{entity_type}) REQUIRE n.id IS UNIQUE"
+                            f"CREATE CONSTRAINT IF NOT EXISTS ON (n:{entity_type}) ASSERT n.id IS UNIQUE"
                         )
                     except Exception as e2:
                         logging.warning(f"Could not create constraint for {entity_type}: {str(e2)}")
         except Exception as e:
-            # Fallback for older Neo4j versions or if constraints already exist
+            # Fallback for if constraints already exist or other issues
             logging.warning(f"Could not create constraints: {str(e)}")
     
     def _create_entity_nodes(self, df, entity_type, id_column, schema):

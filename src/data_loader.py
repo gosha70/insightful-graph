@@ -1,16 +1,43 @@
+import json
+import logging
+from pathlib import Path
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import logging
+import streamlit as st
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def load_relationship_types(json_path: Path):
+    """
+    Load relationship types from a JSON file.
+    """
+    logging.info(f"Loading relationship types from {json_path}")
+    try:
+        with json_path.open('r', encoding='utf-8') as f:
+            rels = json.load(f)
+        # Basic validation
+        if not isinstance(rels, list):
+            raise ValueError("Expected a list of relationship objects")
+        for idx, obj in enumerate(rels):
+            if not all(k in obj for k in ("value", "label", "description")):
+                raise KeyError(f"Missing keys in relationship entry at index {idx}")
+        return rels
+    except Exception as e:
+        logging.error(f"Failed to load relationship types: {e}")
+        raise
+
+# Load at module import (or you could lazy‐load in your classes)
+REL_TYPES_FILE = Path(__file__).parent / "relationship_types.json"
+COMMON_RELATIONSHIP_TYPES = load_relationship_types(REL_TYPES_FILE)
+
 
 class DataLoader:
     @staticmethod
     def load_csv(file_path_or_buffer, **kwargs):
         """Load data from CSV file with automatic type inference"""
-        logging.info(f"Loading CSV data")
+        logging.info("Loading CSV data")
         df = pd.read_csv(file_path_or_buffer, **kwargs)
         return DataLoader.clean_dataframe(df)
     
@@ -22,133 +49,109 @@ class DataLoader:
             df = pd.read_sql(query, connection_string)
             return DataLoader.clean_dataframe(df)
         except Exception as e:
-            logging.error(f"Error loading SQL data: {str(e)}")
+            logging.error(f"Error loading SQL data: {e}")
             raise
     
     @staticmethod
-    def clean_dataframe(df):
+    def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         """Basic cleaning operations"""
-        # Make column names consistent
         df.columns = [col.lower().replace(' ', '_') for col in df.columns]
-        
-        # Handle missing values
         for col in df.columns:
-            # Fill numeric columns with 0 or mean
             if pd.api.types.is_numeric_dtype(df[col]):
-                if df[col].isna().sum() > 0:
+                if df[col].isna().any():
                     df[col] = df[col].fillna(0)
-            # Fill string columns with empty string
             elif pd.api.types.is_string_dtype(df[col]):
-                if df[col].isna().sum() > 0:
+                if df[col].isna().any():
                     df[col] = df[col].fillna('')
-        
         return df
 
 
 class SchemaDetector:
     @staticmethod
-    def infer_schema(df):
+    def infer_schema(df: pd.DataFrame) -> dict:
         """Infer schema from dataframe"""
         logging.info("Inferring schema from dataframe")
         schema = {"columns": {}, "relationships": []}
         total_rows = len(df)
         
         for col in df.columns:
-            # Get basic stats
             unique_count = df[col].nunique()
-            unique_ratio = unique_count / total_rows if total_rows > 0 else 0
+            unique_ratio = unique_count / total_rows if total_rows else 0
             null_count = df[col].isna().sum()
             
-            # Determine column type
             if pd.api.types.is_numeric_dtype(df[col]):
                 col_type = "numeric"
             elif pd.api.types.is_datetime64_dtype(df[col]):
                 col_type = "datetime"
             else:
-                # Check if it might be a date string
-                if SchemaDetector._is_potential_date(df[col]):
-                    col_type = "datetime"
-                else:
-                    col_type = "string"
+                col_type = "datetime" if SchemaDetector._is_potential_date(df[col]) else "string"
             
-            # Determine column role
-            if unique_ratio > 0.9:  # Likely an ID or unique identifier
+            if unique_ratio > 0.9:
                 role = "identifier"
-            elif unique_ratio < 0.1:  # Likely a categorical field
+            elif unique_ratio < 0.1:
                 role = "categorical"
             else:
                 role = "property"
             
-            # Store schema information
             schema["columns"][col] = {
                 "type": col_type,
                 "role": role,
                 "unique_count": unique_count,
                 "unique_ratio": unique_ratio,
                 "null_count": null_count,
-                "sample_values": df[col].dropna().sample(min(5, unique_count) if unique_count > 0 else 0).tolist()
+                "sample_values": df[col].dropna().sample(min(5, unique_count) if unique_count else 0).tolist()
             }
         
-        # Detect potential relationships
-        relationships = SchemaDetector._detect_relationships(df, schema["columns"])
-        schema["relationships"] = relationships
-        
-        logging.info(f"Schema inference complete. Found {len(schema['columns'])} columns and {len(relationships)} potential relationships")
+        schema["relationships"] = SchemaDetector._detect_relationships(df, schema["columns"])
+        logging.info(f"Schema inference complete: {len(schema['columns'])} columns, "
+                     f"{len(schema['relationships'])} relationships detected")
         return schema
     
     @staticmethod
-    def _is_potential_date(series):
-        """Check if a string series might contain dates"""
-        # Sample a few non-null values
-        sample = series.dropna().sample(min(10, len(series.dropna())))
-        if len(sample) == 0:
+    def _is_potential_date(series: pd.Series) -> bool:
+        sample = series.dropna()
+        if sample.empty:
             return False
-        
-        # Try to parse as dates
+        sample = sample.sample(min(10, len(sample)))
         try:
             pd.to_datetime(sample)
             return True
-        except:
+        except Exception:
             return False
     
     @staticmethod
-    def _detect_relationships(df, schema):
-        """Detect potential relationships between columns"""
+    def _detect_relationships(df: pd.DataFrame, schema: dict) -> list:
         relationships = []
+        id_columns = [c for c, info in schema.items() if info["role"] == "identifier" or "_id" in c]
         
-        # Find columns that might be foreign keys
-        id_columns = [col for col, info in schema.items() 
-                     if info["role"] == "identifier" or "_id" in col]
-        
-        # Look for potential foreign key relationships
         for col in id_columns:
-            # Look for columns with similar names in the same dataframe
-            for other_col in df.columns:
-                if col != other_col and (
-                    col.replace("_id", "") == other_col or
-                    other_col.replace("_id", "") == col
-                ):
-                    relationships.append({
-                        "source": col,
-                        "target": other_col,
-                        "type": "RELATES_TO"
-                    })
+            for other in df.columns:
+                if col == other:
+                    continue
+                # name‐based heuristics
+                if col.replace("_id", "") == other or other.replace("_id", "") == col:
+                    rel_type = "RELATES_TO"
+                    base = col.replace("_id", "").lower()
+                    if "owner" in base:
+                        rel_type = "BELONGS_TO"
+                    elif "creator" in base:
+                        rel_type = "CREATED"
+                    elif "part" in base:
+                        rel_type = "PART_OF"
+                    elif "location" in base:
+                        rel_type = "LOCATED_IN"
+                    elif "employee" in base:
+                        rel_type = "WORKS_FOR"
+                    relationships.append({"source": col, "target": other, "type": rel_type})
             
-            # Look for columns that might reference each other
-            for other_col in id_columns:
-                if col != other_col:
-                    # Check if values in one column are a subset of values in another
-                    col_values = set(df[col].dropna().unique())
-                    other_values = set(df[other_col].dropna().unique())
-                    
-                    # If there's significant overlap, might be a relationship
-                    if len(col_values) > 0 and len(other_values) > 0:
-                        overlap = col_values.intersection(other_values)
-                        if len(overlap) / len(col_values) > 0.5:
-                            relationships.append({
-                                "source": col,
-                                "target": other_col,
-                                "type": "REFERENCES"
-                            })
+            # value‐overlap heuristic
+            for other in id_columns:
+                if col == other:
+                    continue
+                vals, oth = set(df[col].dropna()), set(df[other].dropna())
+                if vals and oth:
+                    overlap = vals & oth
+                    if len(overlap) / len(vals) > 0.5:
+                        relationships.append({"source": col, "target": other, "type": "REFERENCES"})
         
         return relationships

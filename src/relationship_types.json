@@ -1,0 +1,22 @@
+[
+    { "value": "RELATES_TO",     "label": "RELATES_TO",     "description": "General, unspecified association between entities",    "category":"referential" },
+    { "value": "HAS",            "label": "HAS",            "description": "A possesses or contains B",                              "category":"hierarchical" },
+    { "value": "PART_OF",        "label": "PART_OF",        "description": "A is a component or member of B",                         "category":"hierarchical" },
+    { "value": "BELONGS_TO",     "label": "BELONGS_TO",     "description": "A belongs to or is owned by B",                           "category":"hierarchical" },
+    { "value": "CREATED",        "label": "CREATED",        "description": "A created or brought B into existence",                  "category":"causal" },
+    { "value": "DERIVED_FROM",   "label": "DERIVED_FROM",   "description": "B is derived or copied from A",                           "category":"causal" },
+    { "value": "AUTHORED",       "label": "AUTHORED",       "description": "A authored or wrote B (document, work)",                  "category":"causal" },
+    { "value": "KNOWS",          "label": "KNOWS",          "description": "A is acquainted with or aware of B",                      "category":"social" },
+    { "value": "FRIEND_OF",      "label": "FRIEND_OF",      "description": "A is socially connected to B as a friend",                "category":"social" },
+    { "value": "WORKS_FOR",      "label": "WORKS_FOR",      "description": "A is employed by or contracted to B",                     "category":"organizational" },
+    { "value": "MANAGES",        "label": "MANAGES",        "description": "A supervises or manages B",                               "category":"organizational" },
+    { "value": "MEMBER_OF",      "label": "MEMBER_OF",      "description": "A is a member of group or organization B",               "category":"organizational" },
+    { "value": "LOCATED_IN",     "label": "LOCATED_IN",     "description": "A’s location is within B (geographical or logical)",      "category":"spatial" },
+    { "value": "ORIGINATES_FROM","label": "ORIGINATES_FROM","description": "A’s place or source of origin is B",                      "category":"spatial" },
+    { "value": "FOLLOWS",        "label": "FOLLOWS",        "description": "A subscribes to updates from B",                          "category":"social" },
+    { "value": "REFERENCES",     "label": "REFERENCES",     "description": "A refers to or cites B",                                  "category":"referential" },
+    { "value": "CITES",          "label": "CITES",          "description": "A bibliographically cites B",                             "category":"referential" },
+    { "value": "DEPENDS_ON",     "label": "DEPENDS_ON",     "description": "A requires B to function or build",                      "category":"referential" },
+    { "value": "SYNONYM_OF",     "label": "SYNONYM_OF",     "description": "A is an alternative name for B",                          "category":"referential" },
+    { "value": "TRANSLATION_OF", "label": "TRANSLATION_OF", "description": "A is a translation of B",                                 "category":"referential" }
+  ]

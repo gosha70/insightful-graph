@@ -39,7 +39,7 @@ def test_dependency(name):
 def test_neo4j_connection():
     """Test connection to Neo4j."""
     try:
-        driver = GraphDatabase.driver(NEO4J_URL, auth=("neo4j", "Sophy1993"))
+        driver = GraphDatabase.driver(NEO4J_URL, auth=("neo4j", "password"))
         with driver.session() as session:
             result = session.run("RETURN 1 AS test")
             result.single()
