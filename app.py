@@ -90,36 +90,8 @@ else:
         unsafe_allow_html=True,
     )
 
-# Function to ensure all columns in the DataFrame are compatible with Arrow serialization
-def make_arrow_compatible(df):
-    """Ensure all columns in the DataFrame are compatible with Arrow serialization."""
-    for col in df.columns:
-        try:
-            if isinstance(df[col].dtype, pd.CategoricalDtype):  # Handle categorical columns
-                df[col] = df[col].astype(str)
-            elif df[col].dtype == 'object':  # Handle object columns
-                df[col] = df[col].astype(str)
-            elif pd.api.types.is_integer_dtype(df[col]):  # Handle integer columns
-                df[col] = pd.to_numeric(df[col], downcast='integer')
-            elif pd.api.types.is_float_dtype(df[col]):  # Handle float columns
-                df[col] = pd.to_numeric(df[col], downcast='float')
-            elif pd.api.types.is_bool_dtype(df[col]):  # Handle boolean columns
-                df[col] = df[col].astype(bool)
-            elif pd.api.types.is_datetime64_any_dtype(df[col]):  # Handle datetime columns
-                df[col] = pd.to_datetime(df[col], errors='coerce')
-            else:  # Fallback for unsupported types
-                df[col] = df[col].astype(str)
-        except Exception as e:
-            # Log and convert problematic columns to strings
-            print(f"Error processing column '{col}': {e}")
-            df[col] = df[col].astype(str)
-    return df
-
 # Display current data status
-if st.session_state.data is not None:
-    # Preprocess the DataFrame to make it Arrow-compatible
-    st.session_state.data = make_arrow_compatible(st.session_state.data)
-    
+if st.session_state.data is not None:    
     # Display the DataFrame
     st.dataframe(st.session_state.data.head(10))
     

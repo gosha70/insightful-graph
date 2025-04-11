@@ -51,20 +51,31 @@ class DataLoader:
         except Exception as e:
             logging.error(f"Error loading SQL data: {e}")
             raise
-    
+
     @staticmethod
     def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-        """Basic cleaning operations"""
+        """Normalize, fill missing, and force Arrow-compatible dtypes."""
+        # 1) Normalize column names
         df.columns = [col.lower().replace(' ', '_') for col in df.columns]
+        
+        # 2) Fill missing values
         for col in df.columns:
             if pd.api.types.is_numeric_dtype(df[col]):
-                if df[col].isna().any():
-                    df[col] = df[col].fillna(0)
-            elif pd.api.types.is_string_dtype(df[col]):
-                if df[col].isna().any():
-                    df[col] = df[col].fillna('')
-        return df
-
+                df[col] = df[col].fillna(0)
+            elif pd.api.types.is_string_dtype(df[col]) or isinstance(df[col].dtype, pd.CategoricalDtype):
+                df[col] = df[col].fillna('').astype(str)
+        
+        # 3) Cast pandas extension dtypes → NumPy dtypes
+        for col in df.columns:
+            dtype = df[col].dtype
+            # nullable ints (Int8, Int16, Int32, Int64)
+            if pd.api.types.is_integer_dtype(dtype) and not isinstance(dtype, np.dtype):
+                df[col] = df[col].astype('int64')
+            # nullable bools
+            if pd.api.types.is_bool_dtype(dtype) and not isinstance(dtype, np.dtype):
+                df[col] = df[col].astype('bool')
+        
+        return df         
 
 class SchemaDetector:
     @staticmethod
