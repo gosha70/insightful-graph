@@ -1,0 +1,21 @@
+order_id,customer_id,product_id,order_date,quantity,price,total_amount,customer_name,customer_email,product_name,product_category
+1,101,201,2023-01-05,2,29.99,59.98,John Smith,john.smith@example.com,Wireless Headphones,Electronics
+2,102,202,2023-01-07,1,49.99,49.99,Emily Johnson,emily.j@example.com,Smart Watch,Electronics
+3,103,203,2023-01-10,3,15.99,47.97,Michael Brown,mbrown@example.com,T-Shirt,Clothing
+4,101,204,2023-01-12,1,89.99,89.99,John Smith,john.smith@example.com,Running Shoes,Footwear
+5,104,205,2023-01-15,2,12.50,25.00,Sarah Wilson,swilson@example.com,Coffee Mug,Home
+6,105,201,2023-01-18,1,29.99,29.99,David Lee,dlee@example.com,Wireless Headphones,Electronics
+7,102,206,2023-01-20,4,8.99,35.96,Emily Johnson,emily.j@example.com,Socks,Clothing
+8,106,207,2023-01-22,1,199.99,199.99,Jessica Taylor,jtaylor@example.com,Tablet,Electronics
+9,107,208,2023-01-25,2,24.99,49.98,Robert Martinez,rmartinez@example.com,Book,Books
+10,103,209,2023-01-28,1,59.99,59.99,Michael Brown,mbrown@example.com,Backpack,Accessories
+11,108,210,2023-01-30,3,19.99,59.97,Amanda Clark,aclark@example.com,Water Bottle,Sports
+12,109,202,2023-02-02,1,49.99,49.99,Thomas Wright,twright@example.com,Smart Watch,Electronics
+13,101,211,2023-02-05,2,34.99,69.98,John Smith,john.smith@example.com,Yoga Mat,Sports
+14,110,212,2023-02-08,1,129.99,129.99,Olivia Nelson,onelson@example.com,Bluetooth Speaker,Electronics
+15,104,213,2023-02-10,4,7.99,31.96,Sarah Wilson,swilson@example.com,Notebook,Office
+16,111,214,2023-02-12,1,299.99,299.99,Daniel Harris,dharris@example.com,Gaming Console,Electronics
+17,112,215,2023-02-15,2,14.99,29.98,Sophia Lewis,slewis@example.com,Phone Case,Accessories
+18,113,216,2023-02-18,1,79.99,79.99,Matthew Walker,mwalker@example.com,Fitness Tracker,Electronics
+19,102,217,2023-02-20,3,22.99,68.97,Emily Johnson,emily.j@example.com,Scented Candle,Home
+20,114,218,2023-02-22,1,149.99,149.99,Emma Thompson,ethompson@example.com,Wireless Earbuds,Electronics

@@ -1,0 +1,26 @@
+movie_id,title,release_year,director,genre,rating,actor_id,actor_name,character,studio_id,studio_name
+1,The Matrix,1999,Lana Wachowski,Sci-Fi,8.7,101,Keanu Reeves,Neo,201,Warner Bros.
+1,The Matrix,1999,Lana Wachowski,Sci-Fi,8.7,102,Laurence Fishburne,Morpheus,201,Warner Bros.
+1,The Matrix,1999,Lana Wachowski,Sci-Fi,8.7,103,Carrie-Anne Moss,Trinity,201,Warner Bros.
+2,Inception,2010,Christopher Nolan,Sci-Fi,8.8,104,Leonardo DiCaprio,Cobb,202,Warner Bros.
+2,Inception,2010,Christopher Nolan,Sci-Fi,8.8,105,Joseph Gordon-Levitt,Arthur,202,Warner Bros.
+2,Inception,2010,Christopher Nolan,Sci-Fi,8.8,106,Ellen Page,Ariadne,202,Warner Bros.
+3,The Shawshank Redemption,1994,Frank Darabont,Drama,9.3,107,Tim Robbins,Andy Dufresne,203,Castle Rock Entertainment
+3,The Shawshank Redemption,1994,Frank Darabont,Drama,9.3,108,Morgan Freeman,Ellis Boyd 'Red' Redding,203,Castle Rock Entertainment
+4,The Dark Knight,2008,Christopher Nolan,Action,9.0,109,Christian Bale,Bruce Wayne,201,Warner Bros.
+4,The Dark Knight,2008,Christopher Nolan,Action,9.0,110,Heath Ledger,Joker,201,Warner Bros.
+4,The Dark Knight,2008,Christopher Nolan,Action,9.0,111,Aaron Eckhart,Harvey Dent,201,Warner Bros.
+5,Pulp Fiction,1994,Quentin Tarantino,Crime,8.9,112,John Travolta,Vincent Vega,204,Miramax
+5,Pulp Fiction,1994,Quentin Tarantino,Crime,8.9,113,Samuel L. Jackson,Jules Winnfield,204,Miramax
+5,Pulp Fiction,1994,Quentin Tarantino,Crime,8.9,114,Uma Thurman,Mia Wallace,204,Miramax
+6,Forrest Gump,1994,Robert Zemeckis,Drama,8.8,115,Tom Hanks,Forrest Gump,205,Paramount Pictures
+6,Forrest Gump,1994,Robert Zemeckis,Drama,8.8,116,Robin Wright,Jenny Curran,205,Paramount Pictures
+7,The Godfather,1972,Francis Ford Coppola,Crime,9.2,117,Marlon Brando,Vito Corleone,205,Paramount Pictures
+7,The Godfather,1972,Francis Ford Coppola,Crime,9.2,118,Al Pacino,Michael Corleone,205,Paramount Pictures
+8,Fight Club,1999,David Fincher,Drama,8.8,119,Brad Pitt,Tyler Durden,206,20th Century Fox
+8,Fight Club,1999,David Fincher,Drama,8.8,120,Edward Norton,The Narrator,206,20th Century Fox
+9,The Lord of the Rings: The Fellowship of the Ring,2001,Peter Jackson,Fantasy,8.8,121,Elijah Wood,Frodo Baggins,207,New Line Cinema
+9,The Lord of the Rings: The Fellowship of the Ring,2001,Peter Jackson,Fantasy,8.8,122,Ian McKellen,Gandalf,207,New Line Cinema
+10,Star Wars: Episode V - The Empire Strikes Back,1980,Irvin Kershner,Sci-Fi,8.7,123,Mark Hamill,Luke Skywalker,208,Lucasfilm
+10,Star Wars: Episode V - The Empire Strikes Back,1980,Irvin Kershner,Sci-Fi,8.7,124,Harrison Ford,Han Solo,208,Lucasfilm
+10,Star Wars: Episode V - The Empire Strikes Back,1980,Irvin Kershner,Sci-Fi,8.7,125,Carrie Fisher,Princess Leia,208,Lucasfilm
