@@ -199,26 +199,8 @@ with st.expander("Connect to Database"):
         except Exception as e:
             st.error(f"Error connecting to database: {str(e)}")
 
-# Ensure all columns have compatible data types for Arrow
-def make_arrow_compatible(df):
-    for col in df.columns:
-        if isinstance(df[col].dtype, pd.CategoricalDtype):  # Handle categorical columns
-            df[col] = df[col].astype(str)
-        elif df[col].dtype == 'object':  # Handle object columns
-            df[col] = df[col].astype(str)
-        elif pd.api.types.is_integer_dtype(df[col]):  # Handle integer columns
-            df[col] = pd.to_numeric(df[col], downcast='integer')
-        elif pd.api.types.is_float_dtype(df[col]):  # Handle float columns
-            df[col] = pd.to_numeric(df[col], downcast='float')
-        elif pd.api.types.is_bool_dtype(df[col]):  # Handle boolean columns
-            df[col] = df[col].astype(bool)
-        else:  # Fallback for unsupported types
-            df[col] = df[col].astype(str)
-    return df
-
 # Apply the fix before displaying the DataFrame
 if 'data' in st.session_state and st.session_state.data is not None:
-    st.session_state.data = make_arrow_compatible(st.session_state.data)
     st.dataframe(st.session_state.data.head(10))
 
 # Display data preview if available
