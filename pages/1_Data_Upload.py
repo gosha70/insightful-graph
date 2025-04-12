@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
+import pyarrow as pa
 import numpy as np
 import os
-from src.data_loader import DataLoader
+from src.data_loader import DataLoader, preprocess_dataframe
 
 # Initialize session state variables if not already set
 if "is_step_available" not in st.session_state:
@@ -199,13 +200,33 @@ with st.expander("Connect to Database"):
         except Exception as e:
             st.error(f"Error connecting to database: {str(e)}")
 
-# Apply the fix before displaying the DataFrame
-if 'data' in st.session_state and st.session_state.data is not None:
-    st.dataframe(st.session_state.data.head(10))
-
 # Display data preview if available
 if 'data' in st.session_state and st.session_state.data is not None:
     st.subheader("Data Preview")
+
+    for col in st.session_state.data.columns:
+        print(f"Column '{col}':")
+        print(st.session_state.data[col].head(10))  # Print the first 10 values
+        print(st.session_state.data[col].dtype)
+        print()
+
+    # Check for missing values
+    print("Missing values per column:")
+    print(st.session_state.data.isna().sum())    
+
+    # Fill missing values
+    st.session_state.data = st.session_state.data.fillna({
+        col: 0 if pd.api.types.is_numeric_dtype(st.session_state.data[col]) else ""
+        for col in st.session_state.data.columns
+    })
+
+    # Preprocess the DataFrame to make it Arrow-compatible
+    st.session_state.data = preprocess_dataframe(st.session_state.data)
+    
+    # Debug column data types
+    print(st.session_state.data.dtypes)
+    
+    # Display the DataFrame
     st.dataframe(st.session_state.data.head(10))
     
     # Show data info

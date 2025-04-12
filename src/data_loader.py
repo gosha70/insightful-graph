@@ -3,35 +3,55 @@ import logging
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from datetime import datetime
-import streamlit as st
+from pandas.api.types import is_numeric_dtype, is_string_dtype, is_categorical_dtype, is_datetime64_any_dtype, is_extension_array_dtype, is_bool_dtype
 
-# Configure logging
+# Configure logging once at the top‐level of your app
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def load_relationship_types(json_path: Path):
-    """
-    Load relationship types from a JSON file.
-    """
     logging.info(f"Loading relationship types from {json_path}")
-    try:
-        with json_path.open('r', encoding='utf-8') as f:
-            rels = json.load(f)
-        # Basic validation
-        if not isinstance(rels, list):
-            raise ValueError("Expected a list of relationship objects")
-        for idx, obj in enumerate(rels):
-            if not all(k in obj for k in ("value", "label", "description")):
-                raise KeyError(f"Missing keys in relationship entry at index {idx}")
-        return rels
-    except Exception as e:
-        logging.error(f"Failed to load relationship types: {e}")
-        raise
+    with json_path.open('r', encoding='utf-8') as f:
+        rels = json.load(f)
+    # validate keys
+    for i, obj in enumerate(rels):
+        if not all(k in obj for k in ("value", "label", "description")):
+            raise KeyError(f"Entry {i} missing one of ['value','label','description']")
+    return rels
 
 # Load at module import (or you could lazy‐load in your classes)
 REL_TYPES_FILE = Path(__file__).parent / "relationship_types.json"
 COMMON_RELATIONSHIP_TYPES = load_relationship_types(REL_TYPES_FILE)
 
+def preprocess_dataframe(df):
+    """Ensure all columns in the DataFrame are compatible with Arrow serialization."""
+    for col in df.columns:
+        try:
+            # Handle categorical columns
+            if pd.api.types.is_categorical_dtype(df[col]):
+                df[col] = df[col].astype(str)
+            # Handle object columns
+            elif pd.api.types.is_object_dtype(df[col]):
+                df[col] = df[col].astype(str)
+            # Handle integer columns (convert to int64)
+            elif pd.api.types.is_integer_dtype(df[col]):
+                df[col] = df[col].astype('int64')
+            # Handle float columns (convert to float64)
+            elif pd.api.types.is_float_dtype(df[col]):
+                df[col] = df[col].astype('float64')
+            # Handle boolean columns
+            elif pd.api.types.is_bool_dtype(df[col]):
+                df[col] = df[col].astype(bool)
+            # Handle datetime columns
+            elif pd.api.types.is_datetime64_any_dtype(df[col]):
+                df[col] = pd.to_datetime(df[col], errors='coerce')
+            # Handle unsupported types
+            else:
+                df[col] = df[col].astype(str)
+        except Exception as e:
+            # Log and convert problematic columns to strings
+            print(f"Error processing column '{col}': {e}")
+            df[col] = df[col].astype(str)
+    return df
 
 class DataLoader:
     @staticmethod
@@ -51,31 +71,42 @@ class DataLoader:
         except Exception as e:
             logging.error(f"Error loading SQL data: {e}")
             raise
-
+    
     @staticmethod
     def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-        """Normalize, fill missing, and force Arrow-compatible dtypes."""
+        """Normalize, fill missing, and cast all pandas extension dtypes to NumPy/Python types."""
         # 1) Normalize column names
         df.columns = [col.lower().replace(' ', '_') for col in df.columns]
         
         # 2) Fill missing values
         for col in df.columns:
-            if pd.api.types.is_numeric_dtype(df[col]):
+            if is_numeric_dtype(df[col]):
                 df[col] = df[col].fillna(0)
-            elif pd.api.types.is_string_dtype(df[col]) or isinstance(df[col].dtype, pd.CategoricalDtype):
+            elif is_string_dtype(df[col]) or is_categorical_dtype(df[col]):
                 df[col] = df[col].fillna('').astype(str)
+            elif is_datetime64_any_dtype(df[col]):
+                df[col] = pd.to_datetime(df[col], errors='coerce')
         
-        # 3) Cast pandas extension dtypes → NumPy dtypes
+        # 3) Cast pandas extension dtypes → native types for Arrow
         for col in df.columns:
-            dtype = df[col].dtype
-            # nullable ints (Int8, Int16, Int32, Int64)
-            if pd.api.types.is_integer_dtype(dtype) and not isinstance(dtype, np.dtype):
-                df[col] = df[col].astype('int64')
-            # nullable bools
-            if pd.api.types.is_bool_dtype(dtype) and not isinstance(dtype, np.dtype):
-                df[col] = df[col].astype('bool')
+            series = df[col]
+            # Any pandas ExtensionArray (Int64Dtype, boolean, StringDtype, etc.)
+            if is_extension_array_dtype(series):
+                # nullable ints → int64
+                if pd.api.types.is_integer_dtype(series.dtype):
+                    logging.debug(f"Casting {col}: {series.dtype} → int64")
+                    df[col] = series.astype('int64')
+                # nullable booleans → bool
+                elif is_bool_dtype(series.dtype):
+                    logging.debug(f"Casting {col}: {series.dtype} → bool")
+                    df[col] = series.astype('bool')
+                # other extension types (e.g. StringDtype) → str
+                else:
+                    logging.debug(f"Casting {col}: {series.dtype} → str")
+                    df[col] = series.astype(str)
         
-        return df         
+        return df
+            
 
 class SchemaDetector:
     @staticmethod
