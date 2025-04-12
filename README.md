@@ -43,7 +43,7 @@ A local AI-powered data analysis and knowledge graph system that allows you to:
 
 1. Start the application:
    ```bash
-   streamlit run app.py
+   streamlit run Home.py
    ```
 
 2. The application will open in your web browser at `http://localhost:8501`
@@ -92,7 +92,7 @@ A local AI-powered data analysis and knowledge graph system that allows you to:
 
 ```
 insightful-graph/
-├── app.py                 # Main Streamlit application entry point
+├── Home.py                 # Main Streamlit application entry point
 ├── pages/                 # Multi-page Streamlit application
 │   ├── 1_Data_Upload.py   # Data ingestion page
 │   ├── 2_Data_Analysis.py # Schema analysis page
