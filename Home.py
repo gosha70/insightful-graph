@@ -1,13 +1,25 @@
+from app_config import apply_page_config
+apply_page_config()
+
 import streamlit as st
 from src.graph_builder import Neo4jConnector
 
-# Page configuration
-st.set_page_config(
-    page_title="Insightful Graph",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
+
+# Inject CSS to widen the block container
+st.markdown(
+    """
+    <style>
+    section[data-testid="stAppViewContainer"]
+      section[data-testid="stMain"] > div[data-testid="stMainBlockContainer"] {
+        max-width: 1400px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
+
 
 # Initialize session state
 if 'data' not in st.session_state:

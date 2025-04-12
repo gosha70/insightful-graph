@@ -1,4 +1,13 @@
 import streamlit as st
+# must be the very first Streamlit command in this file:
+st.set_page_config(
+    page_title="Insightful Graph – Data Upload",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+
 import pandas as pd
 import numpy as np
 import os
@@ -27,6 +36,8 @@ def load_orders_csv():
                 st.session_state.reset_state_on_data_change()
             
         st.session_state.data = data
+        # now enable the next step:
+        st.session_state.is_step_available = lambda step: step == "Data Analysis"
     except Exception as e:
         st.error(f"Error loading sample data: {str(e)}")
             
@@ -64,6 +75,8 @@ def load_orders_csv():
                 st.session_state.reset_state_on_data_change()
                 
         st.session_state.data = data
+        # now enable the next step:
+        st.session_state.is_step_available = lambda step: step == "Data Analysis"
 
 def load_movies_csv():
     try:
@@ -78,6 +91,8 @@ def load_movies_csv():
                 st.session_state.reset_state_on_data_change()
                 
         st.session_state.data = data
+        # now enable the next step:
+        st.session_state.is_step_available = lambda step: step == "Data Analysis"
     except Exception as e:
         st.error(f"Error loading sample data: {str(e)}")
             
@@ -102,6 +117,8 @@ def load_movies_csv():
                 st.session_state.reset_state_on_data_change()
                 
         st.session_state.data = data
+        # now enable the next step:
+        st.session_state.is_step_available = lambda step: step == "Data Analysis"
 
 def load_incidents_csv():
     try:
@@ -115,6 +132,8 @@ def load_incidents_csv():
                 st.session_state.reset_state_on_data_change()
                 
         st.session_state.data = data
+        # now enable the next step:
+        st.session_state.is_step_available = lambda step: step == "Data Analysis"
     except Exception as e:
         st.error(f"Error loading sample data: {str(e)}")
             
@@ -138,7 +157,9 @@ def load_incidents_csv():
             if hasattr(st.session_state, 'reset_state_on_data_change'):
                 st.session_state.reset_state_on_data_change()
                 
-        st.session_state.data = data       
+        st.session_state.data = data
+        # now enable the next step:
+        st.session_state.is_step_available = lambda step: step == "Data Analysis"       
 
 if use_sample:
     sample_option = st.selectbox(
@@ -172,6 +193,8 @@ else:
                     st.session_state.reset_state_on_data_change()
                 
             st.session_state.data = data
+            # now enable the next step:
+            st.session_state.is_step_available = lambda step: step == "Data Analysis"
         except Exception as e:
             st.error(f"Error loading data: {str(e)}")
 
@@ -202,6 +225,8 @@ with st.expander("Connect to Database"):
                         st.session_state.reset_state_on_data_change()
                     
                 st.session_state.data = data
+                # now enable the next step:
+                st.session_state.is_step_available = lambda step: step == "Data Analysis"
         except Exception as e:
             st.error(f"Error connecting to database: {str(e)}")
 
@@ -235,7 +260,8 @@ if 'data' in st.session_state and st.session_state.data is not None:
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Data Types")
-        st.write(st.session_state.data.dtypes)
+        # Convert dtype objects to strings so Arrow can serialize them
+        st.write(st.session_state.data.dtypes.astype(str))
     
     with col2:
         st.subheader("Missing Values")
@@ -267,13 +293,14 @@ if 'data' in st.session_state and st.session_state.data is not None:
                 st.success(f"Dropped {dupes} duplicate rows")
         else:
             st.info("No duplicate rows found")
-    
-    # Next step button
-    if 'is_step_available' in st.session_state and st.session_state.is_step_available("Data Analysis"):
+
+    ## Next step button
+    if 'data' in st.session_state and st.session_state.data is not None:
         st.success("✅ Data loaded successfully! You can now proceed to the Data Analysis step.")
         if st.button("Proceed to Data Analysis"):
             st.switch_page("pages/2_Data_Analysis.py")
     else:
-        st.error("There was an issue with the data. Please check the errors above.")
+        st.error("There was an issue with the data. Please check the errors above.")  
+
 else:
     st.info("Please upload a CSV file, connect to a database, or use a sample dataset to get started.")
