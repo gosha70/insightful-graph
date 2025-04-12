@@ -22,36 +22,6 @@ def load_relationship_types(json_path: Path):
 REL_TYPES_FILE = Path(__file__).parent / "relationship_types.json"
 COMMON_RELATIONSHIP_TYPES = load_relationship_types(REL_TYPES_FILE)
 
-def preprocess_dataframe(df):
-    """Ensure all columns in the DataFrame are compatible with Arrow serialization."""
-    for col in df.columns:
-        try:
-            # Handle categorical columns
-            if pd.api.types.is_categorical_dtype(df[col]):
-                df[col] = df[col].astype(str)
-            # Handle object columns
-            elif pd.api.types.is_object_dtype(df[col]):
-                df[col] = df[col].astype(str)
-            # Handle integer columns (convert to int64)
-            elif pd.api.types.is_integer_dtype(df[col]):
-                df[col] = df[col].astype('int64')
-            # Handle float columns (convert to float64)
-            elif pd.api.types.is_float_dtype(df[col]):
-                df[col] = df[col].astype('float64')
-            # Handle boolean columns
-            elif pd.api.types.is_bool_dtype(df[col]):
-                df[col] = df[col].astype(bool)
-            # Handle datetime columns
-            elif pd.api.types.is_datetime64_any_dtype(df[col]):
-                df[col] = pd.to_datetime(df[col], errors='coerce')
-            # Handle unsupported types
-            else:
-                df[col] = df[col].astype(str)
-        except Exception as e:
-            # Log and convert problematic columns to strings
-            print(f"Error processing column '{col}': {e}")
-            df[col] = df[col].astype(str)
-    return df
 
 class DataLoader:
     @staticmethod
@@ -87,20 +57,20 @@ class DataLoader:
             elif is_datetime64_any_dtype(df[col]):
                 df[col] = pd.to_datetime(df[col], errors='coerce')
         
-        # 3) Cast pandas extension dtypes → native types for Arrow
+        # 3) Cast pandas extension dtypes → native NumPy/Python types for Arrow
         for col in df.columns:
             series = df[col]
             # Any pandas ExtensionArray (Int64Dtype, boolean, StringDtype, etc.)
             if is_extension_array_dtype(series):
-                # nullable ints → int64
+                # nullable ints → genuine NumPy int64
                 if pd.api.types.is_integer_dtype(series.dtype):
-                    logging.debug(f"Casting {col}: {series.dtype} → int64")
-                    df[col] = series.astype('int64')
-                # nullable booleans → bool
+                    logging.debug(f"Casting {col}: {series.dtype} → numpy.int64")
+                    df[col] = series.astype(np.int64)
+                # nullable booleans → native bool
                 elif is_bool_dtype(series.dtype):
                     logging.debug(f"Casting {col}: {series.dtype} → bool")
-                    df[col] = series.astype('bool')
-                # other extension types (e.g. StringDtype) → str
+                    df[col] = series.astype(bool)
+                # other extension types (e.g. StringDtype) → Python str
                 else:
                     logging.debug(f"Casting {col}: {series.dtype} → str")
                     df[col] = series.astype(str)

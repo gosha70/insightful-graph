@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-import pyarrow as pa
 import numpy as np
 import os
-from src.data_loader import DataLoader, preprocess_dataframe
+from src.data_loader import DataLoader
 
 # Initialize session state variables if not already set
 if "is_step_available" not in st.session_state:
@@ -18,7 +17,8 @@ use_sample = st.checkbox("Use sample dataset")
 def load_orders_csv():
     try:
         customer_orders_path = os.path.join("data", "sample_customer_orders.csv")
-        data = pd.read_csv(customer_orders_path)
+        data = DataLoader.load_csv(customer_orders_path)
+
         st.success(f"Loaded sample customer orders dataset with {len(data)} rows")
             
         # Reset dependent state when data changes
@@ -54,20 +54,22 @@ def load_orders_csv():
                 "total_amount": np.random.uniform(20, 200, 20).round(2)
             })
             
-        # Merge data
         merged_data = orders.merge(customers, on="customer_id", how="left")
+        # Clean fallback data
+        data = DataLoader.clean_dataframe(merged_data)
             
-         # Reset dependent state when data changes
-        if 'data' in st.session_state and st.session_state.data is not None and not merged_data.equals(st.session_state.data):
+        # Reset dependent state when data changes
+        if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
             if hasattr(st.session_state, 'reset_state_on_data_change'):
                 st.session_state.reset_state_on_data_change()
                 
-        st.session_state.data = merged_data
+        st.session_state.data = data
 
 def load_movies_csv():
     try:
         movies_path = os.path.join("data", "sample_movies.csv")
-        data = pd.read_csv(movies_path)
+        data = DataLoader.load_csv(movies_path)
+
         st.success(f"Loaded sample movie dataset with {len(data)} rows")
             
             # Reset dependent state when data changes
@@ -83,7 +85,7 @@ def load_movies_csv():
         st.warning("Using generated sample data instead")
             
         # Create sample movie data
-        data = pd.DataFrame({
+        fallback = pd.DataFrame({
                 "movie_id": np.repeat(range(1, 6), 3),
                 "title": np.repeat(["Movie A", "Movie B", "Movie C", "Movie D", "Movie E"], 3),
                 "release_year": np.repeat([2020, 2019, 2021, 2018, 2022], 3),
@@ -92,8 +94,9 @@ def load_movies_csv():
                 "actor_name": [f"Actor {i}" for i in range(1, 16)],
                 "character": [f"Character {i}" for i in range(1, 16)]
             })
-            
-            # Reset dependent state when data changes
+        data = DataLoader.clean_dataframe(fallback)    
+        
+        # Reset dependent state when data changes
         if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
             if hasattr(st.session_state, 'reset_state_on_data_change'):
                 st.session_state.reset_state_on_data_change()
@@ -102,8 +105,8 @@ def load_movies_csv():
 
 def load_incidents_csv():
     try:
-        movies_path = os.path.join("data", "sample_event_log.csv")
-        data = pd.read_csv(movies_path)
+        event_log_path = os.path.join("data", "sample_event_log.csv")
+        data = DataLoader.load_csv(event_log_path)
         st.success(f"Loaded sample incidents event log dataset with {len(data)} rows")
             
             # Reset dependent state when data changes
@@ -119,7 +122,7 @@ def load_incidents_csv():
         st.warning("Using generated sample data instead")
             
         # Create sample incident event log data
-        data = pd.DataFrame({
+        fallback = pd.DataFrame({
             "incident_id": range(1, 21),
             "timestamp": pd.date_range(start="2023-01-01", periods=20, freq="H"),
             "event_type": np.random.choice(["Error", "Warning", "Info", "Critical"], 20),
@@ -127,8 +130,10 @@ def load_incidents_csv():
             "description": [f"Event description {i}" for i in range(1, 21)],
             "severity": np.random.choice(["Low", "Medium", "High", "Critical"], 20)
             })
-            
-            # Reset dependent state when data changes
+
+        data = DataLoader.clean_dataframe(fallback)    
+        
+        # Reset dependent state when data changes
         if 'data' in st.session_state and st.session_state.data is not None and not data.equals(st.session_state.data):
             if hasattr(st.session_state, 'reset_state_on_data_change'):
                 st.session_state.reset_state_on_data_change()
@@ -219,14 +224,11 @@ if 'data' in st.session_state and st.session_state.data is not None:
         col: 0 if pd.api.types.is_numeric_dtype(st.session_state.data[col]) else ""
         for col in st.session_state.data.columns
     })
-
-    # Preprocess the DataFrame to make it Arrow-compatible
-    st.session_state.data = preprocess_dataframe(st.session_state.data)
     
     # Debug column data types
     print(st.session_state.data.dtypes)
     
-    # Display the DataFrame
+    # Data is already cleaned and Arrow‑compatible via DataLoader.clean_dataframe
     st.dataframe(st.session_state.data.head(10))
     
     # Show data info

@@ -1,6 +1,5 @@
 import streamlit as st
 from src.graph_builder import Neo4jConnector
-from src.data_loader import preprocess_dataframe
 
 # Page configuration
 st.set_page_config(
@@ -92,8 +91,6 @@ else:
 
 # Display current data status
 if st.session_state.data is not None:  
-     # Preprocess the DataFrame to make it Arrow-compatible
-    st.session_state.data = preprocess_dataframe(st.session_state.data)
     print(st.session_state.data.dtypes)  
     # Display the DataFrame
     st.dataframe(st.session_state.data.head(10))
