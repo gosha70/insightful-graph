@@ -123,6 +123,15 @@ The application integrates with Ollama to provide natural language question answ
 - **Missing Dependencies**: If you encounter errors about missing packages, try running `pip install -r requirements.txt` again.
 - **Ollama Connection Issues**: Ensure Ollama is running and a model is loaded. Check the logs for connection errors.
 
+---
+
+## First Demo
+
+Please see the full [demo video - 📹](https://drive.google.com/file/d/1DEArI_8-RS9FYsVfIeNe5dUYU4gz9cJn/view?usp=drive_link)
+<img width="872" alt="image" src="https://github.com/user-attachments/assets/8d16bdc5-e23c-4400-8b07-575b8ad08bcb" />
+
+
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
